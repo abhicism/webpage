@@ -6,6 +6,10 @@ There are two ways to publish. Use whichever you prefer day to day.
 
 1. Go to `https://<your-site>.vercel.app/admin.html`.
 2. Enter your admin password, fill in the title/subtitle/tags/content, and click **Publish post**.
+   To add an image: use the **"Insert an image"** file picker above the content box —
+   it uploads the file into `posts/images/` in your repo and inserts
+   `![alt](url)` at your cursor automatically. Images are capped at ~1MB;
+   compress or resize larger ones first.
 3. This commits a new Markdown file straight into `posts/` in your GitHub repo via the
    GitHub API. That commit triggers a normal Vercel deploy, so the post is live in
    well under a minute — no local editing, no manual `git push`.
