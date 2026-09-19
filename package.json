@@ -1,0 +1,9 @@
+{
+  "name": "abhishek-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Portfolio site with a Markdown-driven blog.",
+  "scripts": {
+    "build": "node build.js"
+  }
+}
