@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Write a post — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0b0d;--surface:#14161b;--surface-2:#191c22;--border:#24272e;
+  --text:#e9eaee;--text-dim:#9aa0ab;--text-faint:#5f6570;
+  --accent:#7c93ff;--accent-dim:#4a5794;--accent-soft:rgba(124,147,255,0.10);
+  --green:#4fd68c;--red:#e8697a;
+  --font-display:'Space Grotesk',sans-serif;--font-body:'IBM Plex Sans',sans-serif;--font-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.6;padding:48px 20px 100px;}
+.wrap{max-width:640px;margin:0 auto;}
+h1{font-family:var(--font-display);font-size:26px;margin:0 0 6px;}
+.sub{color:var(--text-dim);font-size:14.5px;margin-bottom:36px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px;}
+.field .hint{font-size:11.5px;color:var(--text-faint);margin-top:5px;}
+.field input,.field textarea{
+  width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;
+  color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;resize:vertical;
+}
+.field textarea{font-family:var(--font-mono);font-size:13.5px;min-height:280px;line-height:1.6;}
+.field input:focus,.field textarea:focus{border-color:var(--accent-dim);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.checkbox-row{display:flex;align-items:center;gap:8px;}
+.checkbox-row input{width:auto;}
+button{
+  font-family:var(--font-body);font-weight:500;font-size:14.5px;
+  background:var(--accent);color:#0a0b0d;border:1px solid var(--accent);border-radius:8px;
+  padding:12px 22px;cursor:pointer;
+}
+button:disabled{opacity:0.5;cursor:not-allowed;}
+#status{margin-top:16px;font-size:13.5px;padding:12px 14px;border-radius:8px;display:none;}
+#status.show{display:block;}
+#status.ok{background:rgba(79,214,140,0.1);color:var(--green);border:1px solid rgba(79,214,140,0.3);}
+#status.err{background:rgba(232,105,122,0.1);color:var(--red);border:1px solid rgba(232,105,122,0.3);}
+code{font-family:var(--font-mono);background:var(--surface-2);border-radius:4px;padding:1px 5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Write a new post</h1>
+  <p class="sub">Publishes straight to your site. This commits a Markdown file to your GitHub repo — Vercel rebuilds automatically after that, so the post goes live in under a minute.</p>
+
+  <div class="card">
+    <form id="post-form">
+      <div class="field">
+        <label for="password">Admin password</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+      </div>
+      <div class="field">
+        <label for="title">Title</label>
+        <input id="title" required>
+      </div>
+      <div class="field">
+        <label for="subtitle">Subtitle</label>
+        <input id="subtitle" placeholder="One line describing the post">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="date">Date</label>
+          <input id="date" type="date">
+          <div class="hint">Defaults to today if left blank.</div>
+        </div>
+        <div class="field">
+          <label for="tags">Tags</label>
+          <input id="tags" placeholder="RAG, Python">
+        </div>
+      </div>
+      <div class="field checkbox-row">
+        <input id="featured" type="checkbox">
+        <label for="featured" style="margin:0;">Pin as featured post</label>
+      </div>
+      <div class="field">
+        <label for="content">Content (Markdown)</label>
+        <textarea id="content" required placeholder="Write in plain Markdown — headings with ##, **bold**, `code`, fenced code blocks, links, lists all render on the site."></textarea>
+      </div>
+      <button type="submit" id="submit-btn">Publish post</button>
+      <div id="status"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+const form = document.getElementById('post-form');
+const statusEl = document.getElementById('status');
+const btn = document.getElementById('submit-btn');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  btn.disabled = true;
+  btn.textContent = 'Publishing…';
+  statusEl.className = '';
+
+  const payload = {
+    password: document.getElementById('password').value,
+    title: document.getElementById('title').value,
+    subtitle: document.getElementById('subtitle').value,
+    date: document.getElementById('date').value,
+    tags: document.getElementById('tags').value,
+    featured: document.getElementById('featured').checked,
+    content: document.getElementById('content').value,
+  };
+
+  try {
+    const res = await fetch('/api/create-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      statusEl.textContent = `Published as ${data.filename}. Vercel is rebuilding — the post will appear on the site shortly.`;
+      statusEl.className = 'show ok';
+      form.reset();
+    } else {
+      statusEl.textContent = data.error + (data.detail ? ' — ' + data.detail : '');
+      statusEl.className = 'show err';
+    }
+  } catch (err) {
+    statusEl.textContent = 'Network error: ' + err;
+    statusEl.className = 'show err';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Publish post';
+  }
+});
+</script>
+</body>
+</html>

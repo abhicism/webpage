@@ -180,17 +180,7 @@ code,.mono{font-family:var(--font-mono);}
    ============================================================ */
 #hero{
   padding:calc(var(--nav-h) + 88px) 0 96px;position:relative;overflow:hidden;
-  /* Keep foreground content readable regardless of the site theme. */
-  --hero-text:#f8fafc;
-  --hero-text-muted:rgba(248,250,252,.82);
-  --hero-accent:#b8c4ff;
-  background:
-    linear-gradient(90deg,rgba(10,11,13,.97) 0%,rgba(10,11,13,.88) 39%,rgba(10,11,13,.43) 68%,rgba(10,11,13,.56) 100%),
-    url('dp.jpg') 56% 22%/cover no-repeat;
   border-bottom:1px solid var(--border-soft);
-}
-@media (max-width:980px){
-  #hero{background-position:center,56% 14%;}
 }
 #hero canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0.55;pointer-events:none;}
 .hero-grid{
@@ -201,31 +191,20 @@ code,.mono{font-family:var(--font-mono);}
 }
 .hero-inner{position:relative;z-index:2;display:grid;grid-template-columns:1.15fr 1fr;gap:56px;align-items:center;}
 @media (max-width:980px){.hero-inner{grid-template-columns:1fr;}}
-.hero-copy{
-  padding:30px;border-radius:var(--radius-l);
-  color:var(--hero-text);background:rgba(10,11,13,.92);border:1px solid rgba(184,196,255,.30);
-  box-shadow:0 20px 50px rgba(0,0,0,.38);backdrop-filter:blur(8px);
-}
-@media (max-width:560px){.hero-copy{padding:22px;}}
 
 .status-pill{
   display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:13px;
-  color:#86efac;border:1px solid rgba(248,250,252,.18);background:rgba(10,11,13,.65);
+  color:var(--green);border:1px solid var(--border);background:var(--surface);
   padding:6px 12px 6px 10px;border-radius:100px;margin-bottom:28px;
 }
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px color-mix(in srgb, var(--green) 20%, transparent);animation:pulse 2.4s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 
-.hero-title{font-size:clamp(34px,5.2vw,58px);line-height:1.06;max-width:640px;color:var(--hero-text);}
-.hero-title .accent-word{color:var(--hero-accent);}
-.hero-sub{margin-top:22px;font-size:18px;color:var(--hero-text-muted);max-width:520px;line-height:1.65;}
+.hero-title{font-size:clamp(34px,5.2vw,58px);line-height:1.06;max-width:640px;}
+.hero-title .accent-word{color:var(--accent);}
+.hero-sub{margin-top:22px;font-size:18px;color:var(--text-dim);max-width:520px;line-height:1.65;}
 .hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px;}
 .hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:36px;}
-#hero .eyebrow{color:var(--hero-accent);}
-#hero .eyebrow::before{background:var(--hero-accent);}
-#hero .btn-ghost{color:var(--hero-text);border-color:rgba(248,250,252,.30);}
-#hero .btn-ghost:hover{border-color:var(--hero-accent);background:rgba(184,196,255,.16);}
-#hero .chip{color:var(--hero-text-muted);border-color:rgba(248,250,252,.22);}
 
 /* terminal */
 .term{
@@ -593,7 +572,7 @@ footer{padding:40px 0;}
   <div class="hero-grid"></div>
   <canvas id="hero-canvas"></canvas>
   <div class="container hero-inner">
-    <div class="hero-copy">
+    <div>
       <span class="status-pill"><span class="status-dot"></span><span id="status-text">Available for interesting engineering problems</span></span>
       <h1 class="hero-title">Full-Stack Software Developer &amp; <span class="accent-word">RAG Engineer</span></h1>
       <p class="hero-sub">I build production-grade full-stack applications, intelligent RAG systems, LLM-powered products, APIs, and developer productivity tools.</p>
@@ -870,9 +849,10 @@ const data = {
     name: "Abhishek Mohanty",
     title: "Full-Stack Software Developer & RAG Engineer",
     description: "Building production-grade software, AI-powered applications, and Retrieval-Augmented Generation systems.",
-    email: "abhicism@gmail.com",
+    email: "hello@example.com",
     github: "https://github.com/",
     githubUsername: "", // set to enable live GitHub data
+    linkedin: "https://linkedin.com/in/",
     twitter: "",
     resume: "", // set a path/URL to enable the Resume button
     location: "",
@@ -1127,14 +1107,16 @@ $('#year').textContent = new Date().getFullYear();
 
 $('#footer-links').innerHTML = [
   data.profile.github && `<a href="${data.profile.github}" target="_blank" rel="noopener">GitHub</a>`,
+  data.profile.linkedin && `<a href="${data.profile.linkedin}" target="_blank" rel="noopener">LinkedIn</a>`,
   data.profile.twitter && `<a href="${data.profile.twitter}" target="_blank" rel="noopener">X</a>`,
 ].filter(Boolean).join('');
 
 $('#contact-links').innerHTML = [
   data.profile.email && `<a href="mailto:${data.profile.email}">✉  ${data.profile.email}</a>`,
   data.profile.github && `<a href="${data.profile.github}" target="_blank" rel="noopener">⌥  GitHub</a>`,
+  data.profile.linkedin && `<a href="${data.profile.linkedin}" target="_blank" rel="noopener">in  LinkedIn</a>`,
   data.profile.twitter && `<a href="${data.profile.twitter}" target="_blank" rel="noopener">𝕏  X / Twitter</a>`,
-].filter(Boolean).join('') || `<p style="color:var(--text-faint);font-size:13.5px;">Add contact links to profile.email or github in the data config.</p>`;
+].filter(Boolean).join('') || `<p style="color:var(--text-faint);font-size:13.5px;">Add social links to profile.email / github / linkedin in the data config.</p>`;
 
 $('#contact-form').addEventListener('submit', e=>{
   e.preventDefault();
@@ -1297,6 +1279,7 @@ $('#contact-form').addEventListener('submit', e=>{
     { label:'Experience', tag:'nav', action:()=>go('#experience') },
     { label:'Contact', tag:'nav', action:()=>go('#contact') },
     { label:'GitHub', tag:'link', action:()=> data.profile.github && window.open(data.profile.github,'_blank') },
+    { label:'LinkedIn', tag:'link', action:()=> data.profile.linkedin && window.open(data.profile.linkedin,'_blank') },
     { label:'Toggle Theme', tag:'action', action:()=> $('#theme-toggle').click() },
   ];
 

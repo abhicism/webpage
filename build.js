@@ -101,6 +101,12 @@ function build() {
 
   console.log(`✔ Built ${posts.length} post(s) → public/blog-data.js`);
   console.log('✔ Copied index.html → public/index.html');
+
+  const adminSrc = path.join(ROOT, 'admin.html');
+  if (fs.existsSync(adminSrc)) {
+    fs.copyFileSync(adminSrc, path.join(OUT_DIR, 'admin.html'));
+    console.log('✔ Copied admin.html → public/admin.html');
+  }
 }
 
 build();
