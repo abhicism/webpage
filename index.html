@@ -849,10 +849,9 @@ const data = {
     name: "Abhishek Mohanty",
     title: "Full-Stack Software Developer & RAG Engineer",
     description: "Building production-grade software, AI-powered applications, and Retrieval-Augmented Generation systems.",
-    email: "hello@example.com",
+    email: "abhicism@gmail.com",
     github: "https://github.com/",
     githubUsername: "", // set to enable live GitHub data
-    linkedin: "https://linkedin.com/in/",
     twitter: "",
     resume: "", // set a path/URL to enable the Resume button
     location: "",
@@ -1107,16 +1106,14 @@ $('#year').textContent = new Date().getFullYear();
 
 $('#footer-links').innerHTML = [
   data.profile.github && `<a href="${data.profile.github}" target="_blank" rel="noopener">GitHub</a>`,
-  data.profile.linkedin && `<a href="${data.profile.linkedin}" target="_blank" rel="noopener">LinkedIn</a>`,
   data.profile.twitter && `<a href="${data.profile.twitter}" target="_blank" rel="noopener">X</a>`,
 ].filter(Boolean).join('');
 
 $('#contact-links').innerHTML = [
   data.profile.email && `<a href="mailto:${data.profile.email}">✉  ${data.profile.email}</a>`,
   data.profile.github && `<a href="${data.profile.github}" target="_blank" rel="noopener">⌥  GitHub</a>`,
-  data.profile.linkedin && `<a href="${data.profile.linkedin}" target="_blank" rel="noopener">in  LinkedIn</a>`,
   data.profile.twitter && `<a href="${data.profile.twitter}" target="_blank" rel="noopener">𝕏  X / Twitter</a>`,
-].filter(Boolean).join('') || `<p style="color:var(--text-faint);font-size:13.5px;">Add social links to profile.email / github / linkedin in the data config.</p>`;
+].filter(Boolean).join('') || `<p style="color:var(--text-faint);font-size:13.5px;">Add contact links to profile.email or github in the data config.</p>`;
 
 $('#contact-form').addEventListener('submit', e=>{
   e.preventDefault();
@@ -1279,7 +1276,6 @@ $('#contact-form').addEventListener('submit', e=>{
     { label:'Experience', tag:'nav', action:()=>go('#experience') },
     { label:'Contact', tag:'nav', action:()=>go('#contact') },
     { label:'GitHub', tag:'link', action:()=> data.profile.github && window.open(data.profile.github,'_blank') },
-    { label:'LinkedIn', tag:'link', action:()=> data.profile.linkedin && window.open(data.profile.linkedin,'_blank') },
     { label:'Toggle Theme', tag:'action', action:()=> $('#theme-toggle').click() },
   ];
 
