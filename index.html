@@ -1583,7 +1583,7 @@ function renderMarkdown(md){
   return md.split('\n\n').map(p=>`<p style="margin-bottom:16px;">${p}</p>`).join('');
 }
 
-function openBlogModal(id){
+function openBlogModal(id, opts={}){
   const b = data.blog.find(x=>x.id===id);
   if(!b) return;
   const modal = $('#modal');
@@ -1602,7 +1602,10 @@ function openBlogModal(id){
       <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
     </div>
     <div class="modal-body">
-      <div class="post-tags" style="margin-bottom:20px;">${b.tags.map(t=>`<span>#${t}</span>`).join('')}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+        <div class="post-tags">${b.tags.map(t=>`<span>#${t}</span>`).join('')}</div>
+        <button type="button" class="btn btn-ghost btn-sm" id="copy-link-btn">Copy link</button>
+      </div>
       <div class="article-body">${renderMarkdown(b.content)}</div>
       <div style="display:flex;justify-content:space-between;margin-top:32px;padding-top:20px;border-top:1px solid var(--border-soft);">
         ${prev? `<span class="btn btn-ghost btn-sm" onclick="openBlogModal('${prev.id}')">← ${prev.title.slice(0,28)}…</span>` : '<span></span>'}
@@ -1610,19 +1613,53 @@ function openBlogModal(id){
       </div>
     </div>`;
   openModal();
+
+  if(!opts.fromHash){
+    history.pushState({ postId: id }, '', `#post-${id}`);
+  }
+
+  const copyBtn = $('#copy-link-btn');
+  copyBtn.addEventListener('click', ()=>{
+    navigator.clipboard.writeText(location.href).then(()=>{
+      copyBtn.textContent = 'Copied!';
+      setTimeout(()=> copyBtn.textContent = 'Copy link', 1500);
+    }).catch(()=>{
+      copyBtn.textContent = 'Copy failed';
+      setTimeout(()=> copyBtn.textContent = 'Copy link', 1500);
+    });
+  });
 }
 
 function openModal(){
   $('#modal-overlay').classList.add('open');
   document.body.classList.add('locked');
-  $('#modal-close').addEventListener('click', closeModal);
+  $('#modal-close').addEventListener('click', ()=> closeModal());
 }
-function closeModal(){
+function closeModal(fromPopstate=false){
   $('#modal-overlay').classList.remove('open');
   document.body.classList.remove('locked');
+  if(!fromPopstate && location.hash.startsWith('#post-')){
+    history.pushState(null, '', location.pathname + location.search + '#blog');
+  }
 }
 $('#modal-overlay').addEventListener('click', e=>{ if(e.target.id==='modal-overlay') closeModal(); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+/* Deep-link routing: #post-<id> opens that post directly, incl. on first load. */
+function routeFromHash(){
+  const hash = location.hash;
+  if(hash.startsWith('#post-')){
+    const id = hash.slice('#post-'.length);
+    if(data.blog.some(p=>p.id===id)){
+      openBlogModal(id, { fromHash:true });
+    }
+  } else {
+    closeModal(true);
+  }
+}
+window.addEventListener('popstate', routeFromHash);
+window.addEventListener('DOMContentLoaded', routeFromHash);
+if(document.readyState !== 'loading') routeFromHash();
 
 /* ============================================================
    OPEN SOURCE
