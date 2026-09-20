@@ -49,6 +49,26 @@ button:disabled{opacity:0.5;cursor:not-allowed;}
 #image-status.err{background:rgba(232,105,122,0.1);color:var(--red);border:1px solid rgba(232,105,122,0.3);}
 #image-status.pending{background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);}
 input[type="file"]{color:var(--text-dim);font-size:13px;}
+#load-posts-btn{background:transparent;color:var(--text);border-color:var(--border);}
+.post-row{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:14px 0;border-bottom:1px solid var(--border);
+}
+.post-row:last-child{border-bottom:none;}
+.post-row .info{min-width:0;}
+.post-row .p-title{font-size:14.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.post-row .p-meta{font-family:var(--font-mono);font-size:11.5px;color:var(--text-faint);margin-top:3px;}
+.post-row .p-meta .badge{color:var(--accent);}
+.delete-btn{
+  background:transparent;color:var(--red);border:1px solid rgba(232,105,122,0.35);
+  padding:7px 14px;font-size:13px;border-radius:7px;flex-shrink:0;
+}
+.delete-btn:hover{background:rgba(232,105,122,0.1);}
+.delete-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.empty-note{color:var(--text-faint);font-size:13.5px;padding:8px 0;}
+#manage-status{font-size:13px;}
+#manage-status.ok{color:var(--green);}
+#manage-status.err{color:var(--red);}
 code{font-family:var(--font-mono);background:var(--surface-2);border-radius:4px;padding:1px 5px;}
 </style>
 </head>
@@ -99,6 +119,14 @@ code{font-family:var(--font-mono);background:var(--surface-2);border-radius:4px;
       <button type="submit" id="submit-btn">Publish post</button>
       <div id="status"></div>
     </form>
+  </div>
+
+  <h1 style="margin-top:56px;">Manage posts</h1>
+  <p class="sub">Deleting removes the file from GitHub and triggers a rebuild — the post disappears from the live site shortly after. This can't be undone from here.</p>
+  <div class="card">
+    <button type="button" id="load-posts-btn">Load posts</button>
+    <div id="manage-status" style="margin-top:14px;"></div>
+    <div id="posts-list" style="margin-top:6px;"></div>
   </div>
 </div>
 
@@ -169,6 +197,97 @@ imageInput.addEventListener('change', async () => {
     imageStatus.className = 'err';
   } finally {
     imageInput.value = '';
+  }
+});
+
+const loadPostsBtn = document.getElementById('load-posts-btn');
+const manageStatus = document.getElementById('manage-status');
+const postsList = document.getElementById('posts-list');
+
+function setManageStatus(text, cls) {
+  manageStatus.textContent = text;
+  manageStatus.className = cls || '';
+}
+
+function renderPosts(posts) {
+  if (!posts.length) {
+    postsList.innerHTML = '<div class="empty-note">No posts found in /posts.</div>';
+    return;
+  }
+  postsList.innerHTML = posts.map((p) => `
+    <div class="post-row" data-path="${p.path}">
+      <div class="info">
+        <div class="p-title">${p.title}</div>
+        <div class="p-meta">${p.date || 'no date'} · ${p.filename}${p.featured ? ' · <span class="badge">featured</span>' : ''}${p.sample ? ' · sample' : ''}</div>
+      </div>
+      <button type="button" class="delete-btn" data-path="${p.path}">Delete</button>
+    </div>
+  `).join('');
+}
+
+async function loadPosts() {
+  if (!passwordEl.value) {
+    setManageStatus('Enter your admin password above first.', 'err');
+    return;
+  }
+  loadPostsBtn.disabled = true;
+  loadPostsBtn.textContent = 'Loading…';
+  setManageStatus('');
+  postsList.innerHTML = '';
+
+  try {
+    const res = await fetch('/api/list-posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: passwordEl.value }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      renderPosts(data.posts);
+    } else {
+      setManageStatus(data.error + (data.detail ? ' — ' + data.detail : ''), 'err');
+    }
+  } catch (err) {
+    setManageStatus('Network error: ' + err, 'err');
+  } finally {
+    loadPostsBtn.disabled = false;
+    loadPostsBtn.textContent = 'Load posts';
+  }
+}
+
+loadPostsBtn.addEventListener('click', loadPosts);
+
+postsList.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.delete-btn');
+  if (!btn) return;
+  const path = btn.dataset.path;
+  const row = btn.closest('.post-row');
+  const title = row.querySelector('.p-title').textContent;
+
+  if (!confirm(`Delete "${title}"? This can't be undone.`)) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Deleting…';
+
+  try {
+    const res = await fetch('/api/delete-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: passwordEl.value, path }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      row.remove();
+      setManageStatus(`Deleted. Vercel is rebuilding — it'll disappear from the site shortly.`, 'ok');
+    } else {
+      setManageStatus(data.error + (data.detail ? ' — ' + data.detail : ''), 'err');
+      btn.disabled = false;
+      btn.textContent = 'Delete';
+    }
+  } catch (err) {
+    setManageStatus('Network error: ' + err, 'err');
+    btn.disabled = false;
+    btn.textContent = 'Delete';
   }
 });
 
